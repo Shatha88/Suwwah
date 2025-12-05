@@ -1,24 +1,52 @@
-"""
-Google Maps / Places integration for Suwwah.
-"""
-
+import time
 from typing import List, Dict
 import requests
 from app.config import GOOGLE_MAPS_KEY
 
-# Google Places Text Search endpoint
 BASE_URL = "https://maps.googleapis.com/maps/api/place/textsearch/json"
 
-# Search for POIs function
+# -----------------------
+# SIMPLE IN-MEMORY CACHE
+# -----------------------
+_CACHE = {}
+CACHE_TTL_SECONDS = 300   # 5 minutes
+
+
 def search_pois(query: str, city: str, limit: int = 8) -> List[Dict]:
     """
     Query Google Places for POIs that match a text query in a specific city.
     Returns a list of simplified place dictionaries (name, type, rating).
     """
+
     if not GOOGLE_MAPS_KEY:
         print("Google Maps key is missing; returning an empty POI list.")
         return []
 
+    # -----------------------
+    # CACHE CHECK
+    # -----------------------
+    key = (query.strip().lower(), city.strip().lower(), limit)
+    now = time.time()
+
+    print(f"[MAPS] Checking cache for key: {key}")
+
+    if key in _CACHE:
+        ts, cached = _CACHE[key]
+        age = now - ts
+        print(f"[MAPS] Cache entry FOUND. Age = {age:.1f}s")
+
+        if age < CACHE_TTL_SECONDS:
+            print(f"[MAPS] >>> CACHE HIT <<< Returning cached results.")
+            return cached
+        else:
+            print(f"[MAPS] Cache EXPIRED. Removing old entry.")
+            _CACHE.pop(key, None)
+    else:
+        print(f"[MAPS] No cache entry found.")
+
+    # -----------------------
+    # CALL GOOGLE API
+    # -----------------------
     full_query = f"{query} in {city}"
     params = {"query": full_query, "key": GOOGLE_MAPS_KEY}
 
@@ -34,41 +62,20 @@ def search_pois(query: str, city: str, limit: int = 8) -> List[Dict]:
         print("Google Maps API status:", status, data.get("error_message"))
         return []
 
-    results: List[Dict] = []
+    results = []
     for r in data.get("results", [])[:limit]:
         results.append(
             {
                 "name": r.get("name", "Unknown place"),
                 "type": ", ".join(r.get("types", [])[:3]),
-                "rating": r.get("rating", "N/A"),
+                "rating": r.get("rating", "N/A")
             }
         )
 
+    # -----------------------
+    # SAVE TO CACHE
+    # -----------------------
+    _CACHE[key] = (time.time(), results)
+    print(f"[MAPS] Saved new result to cache for key: {key}")
+
     return results
-
-
-# === IGNORE ===
-# def _dummy_pois(city: str) -> List[Dict]:
-    # """
-    # Simple dummy data to keep the rest of the system testable.
-    # """
-    # return [
-    #     {"name": f"Heritage Site in {city}", "type": "tourist_attraction", "rating": 4.7},
-    #     {"name": f"Popular Mall in {city}", "type": "shopping_mall", "rating": 4.5},
-    #     {"name": f"Family Park in {city}", "type": "park", "rating": 4.3},
-    # ]
-
-
-# def search_pois(query: str, city: str, limit: int = 8) -> List[Dict]:
-    # """
-    # Search for POIs relevant to the query in a given city.
-
-    # Later:
-    # - Use the Google Places Text Search / Nearby Search APIs.
-    # - Return real results from the API.
-
-    # For now:
-    # - Return a fixed dummy list based on the city only.
-    # """
-    # # TODO: integrate real Google Maps / Places API here.
-    # return _dummy_pois(city)[:limit]

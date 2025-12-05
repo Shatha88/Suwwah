@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "suwwahproject",
+  "private_key_id": "a610394f65353ac58f07adec2e27aa403d4fd9c1",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQC+6F3VVJ98Junk\n3v8VyyqvFH8ZrUVuIdV93Dy9819C0Jg5VmnZCInpgmQLsY+UwANsJNmTQGeyjAfu\nI1+e+Zo5bqPUHsh3CVKpvyTLkXIvHImtym52Dwqz5SpXq8SfZHbGbN7Y62eau/hH\nVXTmfLXcGOxyYmE7C6xwrvb1E6sCszOwutED/7vEosTz+JbUoYWKdWUFpMTumD/D\ncqDoI4Pjdp9SvpEdE3fH74lC1WzKBVc6i0qWC0Og1S7uvtcjNMALo9Ei7e3m5+W5\n4mgAfpcGuzzPevy+CxKJeDfBXupnajFhjWnhpU+Wjxj291rI4QBeTexyD3g3t0ER\n1wgIaUgVAgMBAAECggEAF6CMlG1/u47ZXcEXkuvtIXQI8vWV5TZ8xLHwNpYbURqd\n7GK8gObkoqjHlwbnvUIyajz5TJco/lkEVj28hOFhbAA8eHFC4DCgMW/9rtAWcKw4\ngfDO0P+1lGQlZGpW0F9Pr+kjf3dLAESJStLRwADpRQ80nEd+vx8HvX56BATmIlQy\nO9o+z4QFngcOptaQ6vAfxvxyYAMAgR8+RZMe51rj8TXcQ64FLDvt7OVC/Mk4sifC\nY9I9DeuYOkqG5bQQL/ABPILLHk2ZF82e2R/RoEEBG/mC40I0v0/ZsMCqg2uvG6bf\nx41EywFUwAGNguNNuV/QU8vJslbpDKSr2ZfvnfVyIQKBgQD8PeAoFWuop6jRTx5X\nO/XCSc+10P7YKn7Hb+7b7Yc/SEsPN19hutXV9AGeAdv8r8yE+3jAT4yhtlhyDCmN\nhgeEtWHvguvBuKkbI9/p26gVeffm+FOsMyasJMZNDIpBO5GtLBP2V+v6mCaRpOpN\n/xaU8WNeGpVvlqk/u/xOxDBBqQKBgQDBwIt7NL8GxVa5CVbc+wRdzvwvRSSpcLBb\nGwGXpArJ+/ovUg9Wcxd381PmVCA+eZaTMtaLaBZ5FAfbhkwA/Vcb8q2VNc+hEuvr\nm6Nncs7TM5y1Kkj9vSbWi8HxJG2P+WDqA8M7ich9UcknxKihtVJNxPiFwLeRRoMN\nqvPXKLrujQKBgD15Rvv93HMKCVaZladk8YwcOQbynGlKUgOBABGRXfjKQaC/ufsz\ncZHnGc3MXjTDE3EFaHRV7swqiHujAy1+kK6DFg8tNQ/NVUlMAPIZmmlBhG1B8AJz\npOUnQTzd5YPoZKRzrZnH67bzBdNRAdloZbR+79yrVegQK8dgpSj9H1WhAoGBAJNm\nKjbnH9TE2H8Yzc574QyE5XIIxiVpp6EH4KQ+lj6nxeOuKCD6mgYVReTaZ1VgJt+B\nM5sG6uHeDURC3Rt7oIOQkeIL+BNwU68AzsVqoFIo17UzoCf5eMyLslYEAp4feE1P\n430uCyrbx47LnAa57Q1hJjiLLpwE6rrBLZSoVd4ZAoGBANm1sUMssaGHpXnjml9B\noHMP7WdUp4S7NNjzrveDo6q2AL34N8bUwQC0qzc2ZXjztl1UHwcpjb5nJ43FDZmG\nhV7WTHbkvl8vMCNZ73NN1dWRkW13hM1yjRY3nUPtTCpE2/uvDweMfNH8zTs98OpA\ncIAO3+VHE1wiWslczFhQ65xC\n-----END PRIVATE KEY-----\n",
+  "client_email": "suwwah-vision@suwwahproject.iam.gserviceaccount.com",
+  "client_id": "107350299831742778421",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/suwwah-vision%40suwwahproject.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

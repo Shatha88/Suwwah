@@ -55,7 +55,7 @@ async def handle_image_message(user_id: int, image_bytes: bytes) -> str:
     Main entry point for photo messages from Telegram.
     Attempts landmark recognition and then requests an LLM summary.
     """
-    landmark_name = vision.detect_landmark(image_bytes)
+    landmark_name = vision.detect_landmark(bytes(image_bytes))
     if not landmark_name:
         return (
             "We received your photo, but we could not confidently "
