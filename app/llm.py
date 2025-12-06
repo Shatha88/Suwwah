@@ -7,6 +7,30 @@ from typing import List, Dict, Optional
 from openai import OpenAI
 from app.config import OPENAI_API_KEY
 
+# Language Detection 
+def detect_language(text: str) -> str:
+    """Detect if the user message is Arabic or English."""
+    arabic_chars = set("ءاأآإبتثجحخدذرزسشصضطظعغفقكلمنهوية")
+    if any(ch in arabic_chars for ch in text):
+        return "ar"
+    return "en"
+
+# Error Messages 
+ERROR_MESSAGES = {
+    "no_client": {
+        "ar": "سُوّاح ما قدر يتصل بخدمة الذكاء الاصطناعي حالياً. حاول مرة أخرى لاحقاً.",
+        "en": "Suwwah couldn't connect to the AI service. Please try again later."
+    },
+    "exception": {
+        "ar": "سُوّاح واجه مشكلة تقنية بسيطة أثناء الاتصال بالخدمة. حاول مرة أخرى قريباً.",
+        "en": "Suwwah had a small technical issue while contacting the AI service. Please try again soon."
+    }
+}
+
+def get_error_message(user_text: str, error_type: str) -> str:
+    lang = detect_language(user_text)
+    return ERROR_MESSAGES[error_type][lang]
+
 # Initialize OpenAI client
 if OPENAI_API_KEY:
     client = OpenAI(api_key=OPENAI_API_KEY, timeout=20)
@@ -29,11 +53,17 @@ def _call_model(prompt: str) -> str:
     If the model is not available or an error occurs, return a user-friendly message.
     """
     if client is None:        
-        return (
-            "The AI service will be added soon. "
-            "Please try again later."
-        )
+        return get_error_message(prompt, "no_client")
 
+    # Detect user language and inject it into the system prompt
+    lang = detect_language(prompt)
+    lang_instruction = "Arabic" if lang == "ar" else "English"
+
+    system_prompt = (
+        BASE_SYSTEM_PROMPT +
+        f" Respond ONLY in {lang_instruction}. Never switch languages."
+    )
+    
     try:
         completion = client.chat.completions.create(
             model="gpt-4o-mini" or "gpt-4o",  # or "gpt-4o" if preferred
@@ -43,12 +73,10 @@ def _call_model(prompt: str) -> str:
             ],
         )
         return completion.choices[0].message.content
+        
     except Exception as e:
         print("OpenAI error in _call_model:", repr(e))
-        return (
-            "We faced a temporary technical problem while contacting "
-            "the AI service. Please try again in a few minutes."
-        )
+        return get_error_message(prompt, "exception")
 
 # generate itinerary function
 def generate_itinerary(user_profile: dict, poi_list: List[Dict]) -> str:
@@ -79,11 +107,15 @@ def generate_itinerary(user_profile: dict, poi_list: List[Dict]) -> str:
         )
 
     prompt = (
-        f"Create a practical {days}-day itinerary in {city} for a "
-        f"{traveler_type} traveler. Interests: {interests}.\n\n"
+        f"Create a detailed {days}-day itinerary for {city}.\n"
+        f"The traveler type: {traveler_type}. Interests: {interests}.\n\n"
         f"{poi_part}"
-        "Include morning/afternoon/evening segments and short justifications "
-        "for each stop. Ensure the itinerary is realistic for Saudi Arabia."
+        "The itinerary MUST:\n"
+        "- Be day-by-day.\n"
+        "- Include morning, afternoon, and evening sections.\n"
+        "- Provide short practical justifications.\n"
+        "- Be realistic for tourists in Saudi Arabia.\n"
+        "Respond in the same language as the user."
     )
 
     return _call_model(prompt)
@@ -96,14 +128,14 @@ def summarize_landmark(landmark_name: str, city: str | None = None) -> str:
     if city:
         prompt = (
             f"Explain the landmark '{landmark_name}' in {city}, Saudi Arabia. "
-            "Give a short cultural and historical summary that is suitable "
-            "for tourists visiting the country."
+            "Give a short (1–2 sentences) tourist-friendly cultural and historical summary. "
+            "Respond in the same language as the user."
         )
     else:
         prompt = (
             f"Explain the landmark '{landmark_name}' in Saudi Arabia. "
-            "Give a short cultural and historical summary that is suitable "
-            "for tourists visiting the country."
+            "Give a short (1–2 sentences) tourist-friendly cultural and historical summary. "
+            "Respond in the same language as the user."
         )
 
     return _call_model(prompt)
