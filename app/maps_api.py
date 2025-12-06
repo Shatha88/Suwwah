@@ -1,3 +1,7 @@
+"""
+Google Maps / Places integration for Suwwah.
+"""
+
 import time
 from typing import List, Dict
 import requests
