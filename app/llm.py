@@ -8,12 +8,11 @@ from openai import OpenAI
 from app.config import OPENAI_API_KEY
 
 # Language Detection 
+import re
+
 def detect_language(text: str) -> str:
-    """Detect if the user message is Arabic or English."""
-    arabic_chars = set("ءاأآإبتثجحخدذرزسشصضطظعغفقكلمنهوية")
-    if any(ch in arabic_chars for ch in text):
-        return "ar"
-    return "en"
+    """Detect Arabic vs English using Unicode range."""
+    return "ar" if re.search(r"[\u0600-\u06FF]", text) else "en"
 
 # Error Messages 
 ERROR_MESSAGES = {
@@ -46,22 +45,25 @@ SYSTEM_PROMPT = (
 )
 
 # Internal function to call GPT-4o
-def _call_model(prompt: str) -> str:
-    
+def _call_model(prompt: str, user_text: Optional[str] = None) -> str:
     """
     Send a prompt to GPT-4o and return the reply.
     If the model is not available or an error occurs, return a user-friendly message.
     """
     if client is None:        
-        return get_error_message(prompt, "no_client")
+        return get_error_message(user_text or prompt, "no_client")
 
-    # Detect user language and inject it into the system prompt
-    lang = detect_language(prompt)
+    # Detect language from user text if available
+    lang_source = user_text if user_text else prompt
+    lang = detect_language(lang_source)
     lang_instruction = "Arabic" if lang == "ar" else "English"
 
     lan_system_prompt = (
-        SYSTEM_PROMPT +
-        f" Respond ONLY in {lang_instruction}. Never switch languages."
+        SYSTEM_PROMPT
+        + " Hard rules: "
+          f"1) Respond ONLY in {lang_instruction}. Never switch languages. "
+          "2) If the user specifies city or duration, you MUST follow it. "
+          "3) Use stored profile values only when the user does not specify them."
     )
     
     try:
@@ -76,10 +78,10 @@ def _call_model(prompt: str) -> str:
         
     except Exception as e:
         print("OpenAI error in _call_model:", repr(e))
-        return get_error_message(prompt, "exception")
+        return get_error_message(lang_source, "exception")
 
 # generate itinerary function
-def generate_itinerary(user_profile: dict, poi_list: List[Dict]) -> str:
+def generate_itinerary(user_profile: dict, poi_list: List[Dict], user_text:str) -> str:
     """
     Create a prompt for GPT-4o that asks for a multi-day itinerary based on
     the user profile and a list of candidate POIs from Google Maps.
@@ -108,34 +110,28 @@ def generate_itinerary(user_profile: dict, poi_list: List[Dict]) -> str:
 
     prompt = (
         f"Create a detailed {days}-day itinerary for {city}.\n"
-        f"The traveler type: {traveler_type}. Interests: {interests}.\n\n"
-        f"{poi_part}"
-        "The itinerary MUST:\n"
-        "- Be day-by-day.\n"
-        "- Include morning, afternoon, and evening sections.\n"
-        "- Provide short practical justifications.\n"
-        "- Be realistic for tourists in Saudi Arabia.\n"
-        "Respond in the same language as the user."
+    f"The traveler type: {traveler_type}. Interests: {interests}.\n\n"
+    f"{poi_part}"
+    "The itinerary MUST:\n"
+    "- Be day-by-day.\n"
+    "- Include morning, afternoon, and evening sections.\n"
+    "- Provide short practical justifications.\n"
+    "- Be realistic for tourists in Saudi Arabia.\n"
     )
 
-    return _call_model(prompt)
+    return _call_model(prompt, user_text=user_text)
 
 # prompt for landmark cultural summary
-def summarize_landmark(landmark_name: str, city: str | None = None) -> str:
-    """
-    Ask GPT-4o for a short cultural and historical summary of a landmark.
-    """
+def summarize_landmark(landmark_name: str, user_text: str, city: str | None = None) -> str:
     if city:
         prompt = (
             f"Explain the landmark '{landmark_name}' in {city}, Saudi Arabia. "
-            "Give a short (1–2 sentences) tourist-friendly cultural and historical summary. "
-            "Respond in the same language as the user."
+            "Give a short (1–2 sentences) tourist-friendly cultural and historical summary."
         )
     else:
         prompt = (
             f"Explain the landmark '{landmark_name}' in Saudi Arabia. "
-            "Give a short (1–2 sentences) tourist-friendly cultural and historical summary. "
-            "Respond in the same language as the user."
+            "Give a short (1–2 sentences) tourist-friendly cultural and historical summary."
         )
 
-    return _call_model(prompt)
+    return _call_model(prompt, user_text=user_text)
