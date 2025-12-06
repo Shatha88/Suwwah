@@ -41,7 +41,7 @@ else:
 SYSTEM_PROMPT = (
     "You are Suwwah, a bilingual (Arabic/English) smart tourism assistant "
     "for Saudi Arabia. You help users with itineraries, landmarks, and city "
-    "information. You always reply in the same language as the user message. "
+    "information. You MUST ALWAYS reply in the same language as the user message. "
     "Be accurate, concise, and honest."
 )
 
@@ -66,7 +66,7 @@ def _call_model(prompt: str) -> str:
     
     try:
         completion = client.chat.completions.create(
-            model="gpt-4o-mini" or "gpt-4o",  # or "gpt-4o" if preferred
+            model="gpt-4o-mini",
             messages=[
                 {"role": "system", "content": SYSTEM_PROMPT},
                 {"role": "user", "content": prompt},
