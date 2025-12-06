@@ -15,6 +15,8 @@ from __future__ import annotations
 from typing import Dict, Optional, Tuple, List
 import re
 
+def detect_language(text: str) -> str:
+    return "ar" if re.search(r"[\u0600-\u06FF]", text) else "en"
 
 # Mapping: user_id -> profile dictionary
 USER_PROFILES: Dict[int, dict] = {}
@@ -185,6 +187,8 @@ def update_profile_from_text(user_id: int, text: str) -> dict:
     """
     profile = get_profile(user_id)
 
+    profile["last_lang"] = detect_language(text)
+    
     days = _detect_days(text)
     if days is not None:
         profile["days"] = days
