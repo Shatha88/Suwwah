@@ -38,6 +38,7 @@ async def handle_text_message(user_id: int, text: str) -> str:
     """
     # 1) Update profile FIRST
     profile = profiles.update_profile_from_text(user_id, text)
+    last_lang = profile.get("last_lang", "en")
 
     # 2) Itinerary path
     if is_itinerary_request(text):
@@ -70,14 +71,17 @@ async def handle_image_message(user_id: int, image_bytes: bytes) -> str:
     landmark_name = vision.detect_landmark(bytes(image_bytes))
 
     if not landmark_name:
-        # With images there is no user text to detect language from.
-        # This is a safe neutral message; you can localize later if needed.
+    if last_lang == "ar":
         return (
-            "We received your photo, but we could not confidently "
-            "recognize a specific landmark. This may happen if the place is "
-            "not in the vision model or if image quality is low.\n\n"
-            "You can still ask about the location by name in a text message."
+            "وصلتنا صورتك، لكن لم نتمكن من التعرف على معلم محدد بثقة. "
+            "قد يحدث ذلك إذا لم يكن المكان ضمن نموذج الرؤية أو كانت جودة الصورة منخفضة.\n\n"
+            "يمكنك كتابة اسم الموقع في رسالة نصية."
         )
+    return (
+        "We received your photo, but we could not confidently recognize a specific landmark. "
+        "This may happen if the place is not in the vision model or if image quality is low.\n\n"
+        "You can still ask about the location by name in a text message."
+    )
 
     profile = profiles.get_profile(user_id)
     city = profile.get("city")
