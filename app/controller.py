@@ -16,10 +16,16 @@ def is_itinerary_request(text: str) -> bool:
         "itinerary",
         "day trip",
         "days in",
+        "What to do",
+        "Where to go",
         "رحلة",
         "جدول",
         "برنامج",
         "خطط لي",
+        "وين اروح",
+        "ما هي المعالم",
+        "فعاليات",
+        "أماكن سياحية",
     ]
     lower = text.lower()
     return any(k in lower for k in keywords)
