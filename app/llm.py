@@ -59,8 +59,8 @@ def _call_model(prompt: str) -> str:
     lang = detect_language(prompt)
     lang_instruction = "Arabic" if lang == "ar" else "English"
 
-    system_prompt = (
-        BASE_SYSTEM_PROMPT +
+    lan_system_prompt = (
+        SYSTEM_PROMPT +
         f" Respond ONLY in {lang_instruction}. Never switch languages."
     )
     
@@ -68,7 +68,7 @@ def _call_model(prompt: str) -> str:
         completion = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
-                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "system", "content":  lan_system_prompt},
                 {"role": "user", "content": prompt},
             ],
         )
