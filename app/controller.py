@@ -30,15 +30,44 @@ def is_itinerary_request(text: str) -> bool:
     lower = text.lower()
     return any(k in lower for k in keywords)
 
+def is_profile_reset_request(text: str) -> bool:
+    """
+    Lightweight detection for explicit preference changes/resets.
+    This helps allow the LLM fallback to re-run when the user clearly wants changes.
+    """
+    lower = text.lower()
+    arabic = text
+
+    patterns = [
+        "change my plan",
+        "change my preferences",
+        "update my preferences",
+        "reset my preferences",
+        "new plan",
+
+        "غير خطتي",
+        "غير التفضيلات",
+        "حدث تفضيلاتي",
+        "ابغى خطة جديدة",
+        "خطة جديدة",
+        "ابدأ من جديد",
+    ]
+    return any(p in lower or p in arabic for p in patterns)
 
 async def handle_text_message(user_id: int, text: str) -> str:
     """
     Main entry point for text messages from Telegram.
     Updates the profile and either generates an itinerary or answers a question.
     """
-    # 1) Update profile FIRST
+    # If user explicitly asks to change/reset preferences,
+    # allow LLM enrichment to run again by resetting the flag.
+    if is_profile_reset_request(text):
+        profile = profiles.get_profile(user_id)
+        profile["llm_enriched"] = False
+        profiles.save_profile(user_id, profile)
+
+    # 1) Update profile FIRST (rules -> optional LLM fallback)
     profile = profiles.update_profile_from_text(user_id, text)
-    last_lang = profile.get("last_lang", "en")
 
     # 2) Itinerary path
     if is_itinerary_request(text):
@@ -58,9 +87,8 @@ async def handle_text_message(user_id: int, text: str) -> str:
         # IMPORTANT: pass user_text so LLM locks language correctly
         return llm.generate_itinerary(profile, pois, user_text=text)
 
-    # 3) General tourism Q&A
-    # IMPORTANT: pass user_text so LLM locks language correctly
-    return llm._call_model(text, user_text=text)
+    # 3) General tourism Q&A (fast path)
+    return llm.answer_question(text)
 
 
 async def handle_image_message(user_id: int, image_bytes: bytes) -> str:
@@ -68,27 +96,36 @@ async def handle_image_message(user_id: int, image_bytes: bytes) -> str:
     Main entry point for photo messages from Telegram.
     Attempts landmark recognition and then requests an LLM summary.
     """
+    # Fetch profile early to get last_lang safely
+    profile = profiles.get_profile(user_id)
+    last_lang = profile.get("last_lang", "en")
+    city = profile.get("city")
+
+    # Detect landmark from image
     landmark_name = vision.detect_landmark(bytes(image_bytes))
 
     if not landmark_name:
-    if last_lang == "ar":
+        if last_lang == "ar":
+            return (
+                "وصلتنا صورتك، لكن لم نتمكن من التعرف على معلم محدد بثقة. "
+                "قد يحدث ذلك إذا لم يكن المعلم ضمن نطاق التعرف أو كانت جودة الصورة منخفضة.\n\n"
+                "يمكنك كتابة اسم الموقع في رسالة نصية."
+            )
         return (
-            "وصلتنا صورتك، لكن لم نتمكن من التعرف على معلم محدد بثقة. "
-            "قد يحدث ذلك إذا لم يكن المكان ضمن نموذج الرؤية أو كانت جودة الصورة منخفضة.\n\n"
-            "يمكنك كتابة اسم الموقع في رسالة نصية."
+            "We received your photo, but we could not confidently recognize a specific landmark. "
+            "This may happen if the landmark is out of scope or if image quality is low.\n\n"
+            "You can still ask about the location by name in a text message."
         )
-    return (
-        "We received your photo, but we could not confidently recognize a specific landmark. "
-        "This may happen if the place is not in the vision model or if image quality is low.\n\n"
-        "You can still ask about the location by name in a text message."
+
+    lang_hint = "مرحبا" if last_lang == "ar" else "hello"
+
+    summary = llm.summarize_landmark(
+        landmark_name,
+        user_text=lang_hint,
+        city=city
     )
 
-    profile = profiles.get_profile(user_id)
-    city = profile.get("city")
-
-    # We don't have a user-written text here, so pass a small hint string
-    # based on the profile city language is not reliable.
-    # Best approach later: store last_lang in profile.
-    summary = llm.summarize_landmark(landmark_name, user_text=landmark_name, city=city)
+    if last_lang == "ar":
+        return f"أعتقد أن هذا هو **{landmark_name}**.\n\n{summary}"
 
     return f"I think this is **{landmark_name}**.\n\n{summary}"
