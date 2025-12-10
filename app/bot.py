@@ -2,7 +2,7 @@
 Telegram interface: receives user messages/photos and forwards them to the controller
 """
 
-import re
+import os, re
 # from dotenv import load_dotenv
 from telegram import Update
 from telegram.ext import (
