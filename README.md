@@ -38,10 +38,8 @@ We built this project to support Vision 2030 by reducing fragmented travel plann
 
 ## Credits
 
-[<img src="https://github.com/USERNAME1.png" width="50px;"/>](https://github.com/USERNAME1)&nbsp;&nbsp;
-[<img src="https://github.com/USERNAME2.png" width="50px;"/>](https://github.com/USERNAME2)&nbsp;&nbsp;
-[<img src="https://github.com/USERNAME3.png" width="50px;"/>](https://github.com/USERNAME3)&nbsp;&nbsp;
-[<img src="https://github.com/USERNAME4.png" width="50px;"/>](https://github.com/USERNAME4)&nbsp;&nbsp;
-[<img src="https://github.com/USERNAME5.png" width="50px;"/>](https://github.com/USERNAME5)
-
-Member 1 &nbsp;&nbsp; Member 2 &nbsp;&nbsp; Member 3 &nbsp;&nbsp; Member 4 &nbsp;&nbsp; Member 5
+[<img src="https://github.com/Shatha88.png" width="50px;"/>](https://github.com/Shatha88)&nbsp;&nbsp;
+[<img src="https://github.com/JoudAlrubaish.png" width="50px;"/>](https://github.com/JoudAlrubaish)&nbsp;&nbsp;
+[<img src="https://github.com/safiaaljahdali.png" width="50px;"/>](https://github.com/safiaaljahdali)&nbsp;&nbsp;
+[<img src="https://github.com/sarahalotaibimt1.png" width="50px;"/>](https://github.com/sarahalotaibimt1)&nbsp;&nbsp;
+[<img src="https://github.com/Shadden7.png" width="50px;"/>](https://github.com/Shadden7)
