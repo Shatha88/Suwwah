@@ -11,14 +11,18 @@ from app.config import (
     OPENAI_TIMEOUT,
     MAX_ITINERARY_TOKENS,
     MAX_QA_TOKENS,
+    SAND_RAG_MODE,
 )
-
 # Language Detection 
 import re
+from app.profiles import detect_language
+from app.sand_rag import get_sand_rag
 
-def detect_language(text: str) -> str:
-    """Detect Arabic vs English using Unicode range."""
-    return "ar" if re.search(r"[\u0600-\u06FF]", text) else "en"
+try:
+    from app.sand_rag_embeddings import get_sand_rag_embeddings
+except Exception:
+    get_sand_rag_embeddings = None
+
 
 # Error Messages 
 ERROR_MESSAGES = {
@@ -46,15 +50,16 @@ SYSTEM_PROMPT = (
     "You help users with itineraries, landmarks, and city information. "
     "Be accurate, concise, and honest. "
     "Hard rule: Always reply in the same language as the user's last message."
+    "Hard rule: Answer the user's exact question first."
+    "Do NOT provide an itinerary unless the user explicitly asks for a plan, schedule, or عدد الأيام. "
+    "If the user asks a general question, give a direct answer and at most 2 short suggestions."
+
 )
 
 # Internal function to call model
-def _call_model(prompt: str, user_text: Optional[str] = None, max_tokens: int = 200) -> str:
-    """
-    Send a prompt to GPT-4o and return the reply.
-    If the model is not available or an error occurs, return a user-friendly message.
-    """
-    lang_source = user_text if user_text else prompt
+def _call_model(prompt: str, user_text: Optional[str] = None, max_tokens: int = 600) -> str:
+
+    lang_source = user_text or prompt
 
     if client is None:        
         return get_error_message(lang_source, "no_client")
@@ -89,23 +94,54 @@ def _call_model(prompt: str, user_text: Optional[str] = None, max_tokens: int = 
         print("OpenAI error in _call_model:", repr(e))
         return get_error_message(lang_source, "exception")
 
-# fast path for general Q&A
+# -----------------------
+# SAND context builder
+# -----------------------
+
+def build_sand_context(user_text: str) -> str:
+    if SAND_RAG_MODE == "off":
+        return ""
+
+    lang = detect_language(user_text)
+
+    if SAND_RAG_MODE == "embeddings" and get_sand_rag_embeddings:
+        rag = get_sand_rag_embeddings()
+        docs = rag.search(user_text, lang=lang, k=3)
+    else:
+        rag = get_sand_rag(use_mock_if_missing=True)
+        docs = rag.search(user_text, lang=lang, k=3)
+
+    if not docs:
+        return ""
+
+    lines = [f"- {d.text}" for d in docs]
+    return "Relevant Saudi tourism narrative snippets (SAND):\n" + "\n".join(lines) + "\n\n"
+
+# -----------------------
+# Public helpers
+# -----------------------
+
 def answer_question(user_text: str) -> str:
-    """Fast path for general Q&A."""
-    return _call_model(user_text, user_text=user_text, max_tokens=MAX_QA_TOKENS)
+    sand_ctx = build_sand_context(user_text)
+
+    prompt = (
+        f"{sand_ctx}"
+        "Answer the user's question directly in 2-4 sentences. "
+        "If helpful, add at most 2 brief suggestions. "
+        "Do not create a full itinerary unless asked.\n\n"
+        f"User message: {user_text}"
+    )
+    return _call_model(prompt, user_text=user_text)
 
 # generate itinerary function
 def generate_itinerary(user_profile: dict, poi_list: List[Dict], user_text:str) -> str:
-    """
-    Create a prompt for GPT-4o that asks for a multi-day itinerary based on
-    the user profile and a list of candidate POIs from Google Maps.
 
-    Or, returns a simple stub text.
-    """
     city: str = user_profile.get("city", "Unknown city")
     days: int = int(user_profile.get("days", 1))
     traveler_type: str = user_profile.get("traveler_type", "general")
     interests: str = user_profile.get("interests", "general")
+
+    sand_ctx = build_sand_context(user_text)
 
     if poi_list:
         poi_lines = "\n".join(
@@ -121,6 +157,7 @@ def generate_itinerary(user_profile: dict, poi_list: List[Dict], user_text:str) 
         )
 
     prompt = (
+        f"{sand_ctx}"
         f"Create a detailed {days}-day itinerary for {city} in Saudi Arabia.\n"
         f"The traveler type: {traveler_type}. Interests: {interests}.\n\n"
         f"{poi_part}"
@@ -146,5 +183,13 @@ def summarize_landmark(landmark_name: str, user_text: str, city: str | None = No
             f"Explain the landmark '{landmark_name}' in Saudi Arabia. "
             "Give a short (1–2 sentences) tourist-friendly cultural and historical summary."
         )
+    
+    sand_ctx = build_sand_context(user_text)
+    final_prompt = (
+        f"{sand_ctx}"
+        f"{prompt}"
+        " Keep the answer short concise and engaging for tourists."
+        )
 
-    return _call_model(prompt, user_text=user_text, max_tokens=140)
+
+    return _call_model(final_prompt, user_text=user_text, max_tokens=140)

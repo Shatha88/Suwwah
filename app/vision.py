@@ -6,9 +6,9 @@ If Vision is not configured or fails, detect_landmark returns None.
 from typing import Optional
 import base64
 from openai import OpenAI
-from app.config import OPENAI_API_KEY, OPENAI_TIMEOUT, ENABLE_VISION
+from app.config import OPENAI_API_KEY, OPENAI_TIMEOUT, ENABLE_VISION, OPENAI_MODEL
 
-VISION_MODEL = "gpt-4o-mini"
+VISION_MODEL = OPENAI_MODEL
 
 # Client Initialization
 client = OpenAI(api_key=OPENAI_API_KEY, timeout=OPENAI_TIMEOUT) if OPENAI_API_KEY else None

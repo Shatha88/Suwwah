@@ -40,10 +40,10 @@ def detect_tg_lang(update: Update) -> str:
 # Safe reply function with Markdown fallback
 async def safe_reply(update: Update, text: str) -> None:
     """
-    Tries Markdown first, falls back to plain text if Markdown fails.
+    Send a reply to the user, with a fallback in case of formatting errors.
     """
     try:
-        await update.message.reply_text(text, parse_mode="Markdown")
+        await update.message.reply_text(text)
     except Exception:
         await update.message.reply_text(text)
 

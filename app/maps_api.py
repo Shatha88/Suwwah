@@ -5,7 +5,7 @@ Google Maps / Places integration for Suwwah.
 import time
 from typing import List, Dict, Optional
 import requests
-from app.config import GOOGLE_MAPS_KEY, ENVIRONMENT
+from app.config import GOOGLE_MAPS_KEY, ENVIRONMENT, ENABLE_MAPS
 
 BASE_URL = "https://maps.googleapis.com/maps/api/place/textsearch/json"
 
@@ -28,7 +28,7 @@ def search_pois(query: str, city: str, limit: int = 8, lang: Optional[str] = Non
     Returns a list of simplified place dictionaries (name, type, rating).
     """
 
-    if not GOOGLE_MAPS_KEY:
+    if not GOOGLE_MAPS_KEY or not ENABLE_MAPS:
         print("Google Maps key is missing; returning an empty POI list.")
         _log("[MAPS] GOOGLE_MAPS_KEY missing; returning empty POI list.")
         return []

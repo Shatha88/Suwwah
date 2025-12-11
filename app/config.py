@@ -32,3 +32,6 @@ ENABLE_VISION = os.getenv("ENABLE_VISION", "1") == "1"
 
 MAX_ITINERARY_TOKENS = int(os.getenv("MAX_ITINERARY_TOKENS", "450"))
 MAX_QA_TOKENS = int(os.getenv("MAX_QA_TOKENS", "200"))
+
+# Optional RAG mode for itinerary generation: "off" | "tfidf" | "embeddings"
+SAND_RAG_MODE = os.getenv("SAND_RAG_MODE", "tfidf").lower()
