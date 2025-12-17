@@ -22,6 +22,7 @@ OPENAI_TIMEOUT = int(os.getenv("OPENAI_TIMEOUT", "20"))  # seconds
 
 # Google Maps API key
 GOOGLE_MAPS_KEY = os.getenv("GOOGLE_MAPS_KEY", "")
+VISION_MODEL = os.getenv("VISION_MODEL", "gpt-4o-mini")
 
 # Application environment: "development" or "production"
 ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
