@@ -40,9 +40,9 @@ def detect_landmark(image_bytes: bytes) -> Optional[str]:
         b64_image = base64.b64encode(image_bytes).decode("utf-8")
 
         prompt = (
-            "Identify the landmark in this image.\n"
+            "You are an expert in identifying world landmarks.\n"
+            "Look at the image and reply ONLY with the landmark name.\n"
             "Prioritize Saudi Arabia landmarks when relevant.\n"
-            "Return ONLY the most likely official place/landmark name.\n"
             "If you are not confident, return exactly: unknown"
         )
 
@@ -64,7 +64,6 @@ def detect_landmark(image_bytes: bytes) -> Optional[str]:
                 }
             ],
             temperature=0,
-            max_tokens=30,
         )
 
         # Extract response text
@@ -74,7 +73,7 @@ def detect_landmark(image_bytes: bytes) -> Optional[str]:
         if not result or result.lower() == "unknown":
             return None
 
-        return result.strip(".!:\n")
+        return result
 
     except Exception as e:
         print("Vision detection error:", repr(e))

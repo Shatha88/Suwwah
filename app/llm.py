@@ -57,7 +57,7 @@ SYSTEM_PROMPT = (
 )
 
 # Internal function to call model
-def _call_model(prompt: str, user_text: Optional[str] = None, max_tokens: int = 600) -> str:
+def _call_model(prompt: str, user_text: Optional[str] = None) -> str:
 
     lang_source = user_text or prompt
 
@@ -84,7 +84,6 @@ def _call_model(prompt: str, user_text: Optional[str] = None, max_tokens: int = 
                 {"role": "system", "content":  lan_system_prompt},
                 {"role": "user", "content": prompt},
             ],
-            max_tokens=max_tokens,
             # temperature means creativity level (0 = deterministic, 1 = creative)
             temperature=0.4,
         )
@@ -169,7 +168,7 @@ def generate_itinerary(user_profile: dict, poi_list: List[Dict], user_text:str) 
         "- Keep the response compact and well-structured.\n"
     )
 
-    return _call_model(prompt, user_text=user_text, max_tokens=MAX_ITINERARY_TOKENS)
+    return _call_model(prompt, user_text=user_text)
 
 # prompt for landmark cultural summary
 def summarize_landmark(landmark_name: str, user_text: str, city: str | None = None) -> str:
@@ -192,4 +191,4 @@ def summarize_landmark(landmark_name: str, user_text: str, city: str | None = No
         )
 
 
-    return _call_model(final_prompt, user_text=user_text, max_tokens=140)
+    return _call_model(final_prompt, user_text=user_text)

@@ -32,26 +32,30 @@ def search_pois(query: str, city: str, limit: int = 8, lang: Optional[str] = Non
         print("Google Maps key is missing; returning an empty POI list.")
         _log("[MAPS] GOOGLE_MAPS_KEY missing; returning empty POI list.")
         return []
-    
-    q = (query or "").strip()
-    c = (city or "").strip()
-
-    if not q or not c:
-        return []
-    
+        
     # -----------------------
     # CACHE CHECK
     # -----------------------
     cache_lang = lang or "auto"
-    key = (q.lower(), c.lower(), limit, cache_lang)
+    key = (query.strip().lower(), city.strip().lower(), limit, cache_lang)
     now = time.time()
+
+    print(f"[MAPS] Checking cache for key: {key}")
 
     if key in _CACHE:
         ts, cached = _CACHE[key]
-        if now - ts < CACHE_TTL_SECONDS:
-            _log(f"[MAPS] Cache HIT for key: {key}")
+        age = now - ts
+        print(f"[MAPS] Cache entry FOUND. Age = {age:.1f}s")
+
+        if age < CACHE_TTL_SECONDS:
+            print(f"[MAPS] >>> CACHE HIT <<< Returning cached results.")
             return cached
-        _CACHE.pop(key, None)
+        else:
+            print(f"[MAPS] Cache EXPIRED. Removing old entry.")
+            _CACHE.pop(key, None)
+    else:
+        print(f"[MAPS] No cache entry found.")
+
 
     # -----------------------
     # CALL GOOGLE API

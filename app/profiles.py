@@ -188,7 +188,7 @@ def _extract_profile_with_llm(user_text: str) -> dict:
         "Return JSON only, no extra text."
     )
 
-    raw = llm._call_model(prompt, user_text=user_text, max_tokens=160)
+    raw = llm._call_model(prompt, user_text=user_text)
 
     try:
         data = json.loads(raw)
