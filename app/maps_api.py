@@ -60,7 +60,7 @@ def search_pois(query: str, city: str, limit: int = 8, lang: Optional[str] = Non
     # -----------------------
     # CALL GOOGLE API
     # -----------------------
-    full_query = f"{q} in {c}"
+    full_query = f"{query} in {city}"
     params = {
         "query": full_query,
         "key": GOOGLE_MAPS_KEY,
