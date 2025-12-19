@@ -48,10 +48,10 @@ client = OpenAI(api_key=OPENAI_API_KEY, timeout=OPENAI_TIMEOUT) if OPENAI_API_KE
 SYSTEM_PROMPT = (
     "You are Suwwah, a smart tourism assistant for Saudi Arabia. "
     "You help users with itineraries, landmarks, and city information. "
-    "Be accurate, concise, and honest. "
+    "Be accurate, concise, helpful and honest. "
     "Hard rule: Always reply in the same language as the user's last message."
     "Hard rule: Answer the user's exact question first."
-    "Do NOT provide an itinerary unless the user explicitly asks for a plan, schedule, or عدد الأيام. "
+    "Do NOT provide an itinerary unless the user explicitly asks for a plan, schedule, tour or count of days/weeks. "
     "If the user asks a general question, give a direct answer and at most 2 short suggestions."
 
 )
@@ -75,6 +75,7 @@ def _call_model(prompt: str, user_text: Optional[str] = None) -> str:
           "2) If the user specifies city or duration, you MUST follow it. "
           "3) Use stored profile values only when the user does not specify them."
           "4) Keep answers practical for real tourists."
+          "5) Be friendly and helpful."
     )
     
     try:
@@ -85,7 +86,7 @@ def _call_model(prompt: str, user_text: Optional[str] = None) -> str:
                 {"role": "user", "content": prompt},
             ],
             # temperature means creativity level (0 = deterministic, 1 = creative)
-            temperature=0.4,
+            temperature=0.6,
         )
         return completion.choices[0].message.content
         
@@ -125,9 +126,8 @@ def answer_question(user_text: str) -> str:
 
     prompt = (
         f"{sand_ctx}"
-        "Answer the user's question directly in 2-4 sentences. "
+        "Answer the user's question directly in 2-4 sentences unless the user asks for a plan, schedule, tour or count of days/weeks. "
         "If helpful, add at most 2 brief suggestions. "
-        "Do not create a full itinerary unless asked.\n\n"
         f"User message: {user_text}"
     )
     return _call_model(prompt, user_text=user_text)
