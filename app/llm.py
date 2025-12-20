@@ -55,6 +55,8 @@ Core abilities:
 - Suggest realistic POIs based on Google Maps / Places data when available.
 
 Hard rules:
+0) If the user asks only for a name, location, short description, or small fact, 
+    answer that question ONLY and do not add extra suggestions or advertisements.
 1) Always reply in the same language as the user's last message.
 2) When the user asks you to PLAN or ORGANIZE a trip, you MUST provide
    a concrete, structured itinerary. Do NOT say that you cannot plan.
@@ -65,7 +67,7 @@ Hard rules:
 4) Follow user constraints (days, family/adventure, budget, city) whenever
    they are mentioned. Do not ignore them.
 5) Keep answers concise but practically useful: day-by-day, morning/afternoon/
-   evening where applicable, with short justifications.
+   evening where applicable, with short justifications and don't add symbols like * or #.
 """
 )
 
@@ -206,24 +208,25 @@ def generate_itinerary(user_profile: dict, poi_list: List[Dict], user_text:str) 
     return _call_model(prompt, user_text=user_text)
 
 # prompt for landmark cultural summary
-def summarize_landmark(landmark_name: str, user_text: str, city: str | None = None) -> str:
-    if city:
-        prompt = (
-            f"Explain the landmark '{landmark_name}' in {city}, Saudi Arabia. "
-            "Give a short (1–2 sentences) tourist-friendly cultural and historical summary."
-        )
-    else:
-        prompt = (
-            f"Explain the landmark '{landmark_name}' in Saudi Arabia. "
-            "Give a short (1–2 sentences) tourist-friendly cultural and historical summary."
-        )
-    
-    sand_ctx = build_sand_context(user_text)
-    final_prompt = (
-        f"{sand_ctx}"
-        f"{prompt}"
-        " Keep the answer short concise and engaging for tourists."
-        )
+def summarize_landmark(landmark_name: str, user_text: str) -> str:
+    """
+    Ask GPT-4o-mini for a short cultural/historical summary of a landmark.
+    Does NOT rely on the profile city and does NOT use SAND.
+    """
+    lang = detect_language(user_text)
+    instruction_lang = "Arabic" if lang == "ar" else "English"
+    print(user_text, lang)
+    prompt = (
+        "You are a careful Saudi tourism expert.\n"
+        f"Landmark name: '{landmark_name}'.\n\n"
+        "Write a tourist-friendly cultural and historical summary in 1–2 sentences.\n"
+        "Rules:\n"
+        "1) If you know the correct Saudi city or region, you may mention it.\n"
+        "2) If you are NOT fully sure about the exact city/region, do NOT guess; "
+        "   either omit the city or say it is a famous landmark in Saudi Arabia.\n"
+        "3) Do not invent non-existent attractions, events, or locations.\n"
+        "4) Keep the answer short, accurate, and engaging for tourists.\n"
+        f"5) Reply in {instruction_lang}."
+    )
 
-
-    return _call_model(final_prompt, user_text=user_text)
+    return _call_model(prompt, user_text=user_text)

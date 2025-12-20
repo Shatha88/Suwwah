@@ -116,7 +116,9 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         photo_file = await update.message.photo[-1].get_file()
         image_bytes = await photo_file.download_as_bytearray()
 
-        reply = await controller.handle_image_message(user_id, image_bytes)
+        caption = update.message.caption or ""
+
+        reply = await controller.handle_image_message(user_id, image_bytes, caption)
         await safe_reply(update, reply)
 
     except Exception as e:

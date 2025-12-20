@@ -91,18 +91,18 @@ async def handle_text_message(user_id: int, text: str) -> str:
     return llm.answer_question(text)
 
 
-async def handle_image_message(user_id: int, image_bytes: bytes) -> str:
+async def handle_image_message(user_id: int, image_bytes: bytes, caption: str | None = None) -> str:
     """
     Main entry point for photo messages from Telegram.
     Attempts landmark recognition and then requests an LLM summary.
     """
+    # Detect landmark from image
+    landmark_name = vision.detect_landmark(bytes(image_bytes), caption=caption)
+
     # Fetch profile early to get last_lang safely
     profile = profiles.get_profile(user_id)
     last_lang = profile.get("last_lang", "en")
-    city = profile.get("city")
 
-    # Detect landmark from image
-    landmark_name = vision.detect_landmark(bytes(image_bytes))
 
     if not landmark_name:
         if last_lang == "ar":
@@ -117,15 +117,8 @@ async def handle_image_message(user_id: int, image_bytes: bytes) -> str:
             "You can still ask about the location by name in a text message."
         )
 
-    lang_hint = "مرحبا" if last_lang == "ar" else "hello"
+    # lang_hint = "مرحبا" if last_lang == "ar" else "hello"
+    
+    summary = llm.summarize_landmark(landmark_name, user_text=caption)
 
-    summary = llm.summarize_landmark(
-        landmark_name,
-        user_text=lang_hint,
-        city=city
-    )
-
-    if last_lang == "ar":
-        return f"أعتقد أن هذا هو **{landmark_name}**.\n\n{summary}"
-
-    return f"I think this is **{landmark_name}**.\n\n{summary}"
+    return summary
