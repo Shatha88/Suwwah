@@ -116,11 +116,7 @@ async def handle_image_message(user_id: int, image_bytes: bytes, caption: str | 
             "This may happen if the landmark is out of scope or if image quality is low.\n\n"
             "You can still ask about the location by name in a text message."
         )
-
-    # lang_hint = "مرحبا" if last_lang == "ar" else "hello"
-    
-    # summary = llm.summarize_landmark(landmark_name, user_text=caption)
-    
+        
     user_text = caption if caption else ("اكتب الرد بالعربية" if last_lang == "ar" else "Reply in English")
     summary = llm.summarize_landmark(landmark_name, user_text=user_text)
 
