@@ -1,7 +1,7 @@
-# environment variables
+__pycache__/
+*.pyc
+.DS_Store
+.vscode/
+*.json
 .env
-.suwwahproject-a610394f6535.json
-# virtual environmentß
 .venv/
-# python cache
-**/__pycache__/

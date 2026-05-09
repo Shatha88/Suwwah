@@ -4,3 +4,5 @@ openai==1.52.2
 requests==2.32.3
 google-cloud-vision==3.7.4
 httpx==0.27.2
+# embedding model for text similarity
+# sentence-transformers==3.3.1

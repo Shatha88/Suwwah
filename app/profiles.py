@@ -82,7 +82,7 @@ def _detect_days(text: str) -> Optional[int]:
         return 14
 
     # 3) Weekend hint
-    if ("weekend" in lower or "عطلة نهاية الأسبوع" in text or "عطلة نهاية الاسبوع" in text)
+    if ("weekend" in lower or "عطلة نهاية الأسبوع" in text or "عطلة نهاية الاسبوع" in text):
         return 2
 
     return None
